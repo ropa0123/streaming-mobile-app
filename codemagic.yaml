@@ -2,60 +2,22 @@ workflows:
   android-build:
     name: Tech Hub Solutions APK Build
     max_build_duration: 60
-    instance_type: linux # Linux is highly recommended for Buildozer
+    # FIX: Change 'linux' to 'mac_mini_m2' to stay on the Free Plan
+    instance_type: mac_mini_m2 
     environment:
       vars:
         PYTHON_VERSION: "3.12"
     scripts:
-      - name: Install System Dependencies
-        script: |
-          sudo apt-get update
-          sudo apt-get install -y \
-            python3-pip \
-            build-essential \
-            git \
-            python3 \
-            python3-dev \
-            ffmpeg \
-            libsdl2-dev \
-            libsdl2-image-dev \
-            libsdl2-mixer-dev \
-            libsdl2-ttf-dev \
-            libportmidi-dev \
-            libswscale-dev \
-            libavformat-dev \
-            libavcodec-dev \
-            zlib1g-dev \
-            libgstreamer1.0-gstreamer-lite0 \
-            libgstreamer1.0-dev \
-            libgstreamer-plugins-base1.0-dev \
-            zip \
-            unzip \
-            openjdk-17-jdk \
-            autoconf \
-            libtool \
-            pkg-config \
-            libncurses5-dev \
-            libncursesw5-dev \
-            libtinfo5 \
-            cmake \
-            libffi-dev \
-            libssl-dev \
-            aidnl
-      
       - name: Install Python Fixes & Buildozer
         script: |
           pip install --upgrade pip
-          # THE FIX: Manually install setuptools to provide 'distutils' for Python 3.12
+          # Fix for the distutils error in Python 3.12
           pip install "setuptools<70.0.0" 
           pip install buildozer
-          pip install Cython==0.29.33 # Recommended version for Kivy stability
-
+          pip install Cython==0.29.33
       - name: Build APK
         script: |
-          # This command accepts the SDK licenses and starts the build
+          # On macOS, Buildozer may need specific paths or 'yes' to accept SDKs
           yes | buildozer -v android debug
-          
     artifacts:
-      - .buildozer/android/platform/build-armeabi-v7a/dists/*/bin/*.apk
       - bin/*.apk
