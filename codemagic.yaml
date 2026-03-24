@@ -2,7 +2,6 @@ workflows:
   android-build:
     name: Tech Hub Solutions APK Build
     max_build_duration: 60
-    # FIX: Change 'linux' to 'mac_mini_m2' to stay on the Free Plan
     instance_type: mac_mini_m2 
     environment:
       vars:
@@ -11,13 +10,18 @@ workflows:
       - name: Install Python Fixes & Buildozer
         script: |
           pip install --upgrade pip
-          # Fix for the distutils error in Python 3.12
+          # Fix for 'distutils' error in Python 3.12
           pip install "setuptools<70.0.0" 
+          # Fix for Buildozer compatibility (must be < 3.0)
+          pip install "Cython==0.29.33"
           pip install buildozer
-          pip install Cython==0.29.33
+
       - name: Build APK
         script: |
-          # On macOS, Buildozer may need specific paths or 'yes' to accept SDKs
+          # Force refresh of python-for-android to support AAB
+          rm -rf .buildozer/android/platform/python-for-android
+          
+          # Accept licenses and start build
           yes | buildozer -v android debug
     artifacts:
       - bin/*.apk
