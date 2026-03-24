@@ -1,0 +1,59 @@
+workflows:
+  android-build:
+    name: Build Android APK
+    instance_type: linux
+    max_build_duration: 120
+    environment:
+      python: 3.11
+      java: 17
+      vars:
+        BUILDOZER_VERSION: "1.5.0"
+    cache:
+      cache_paths:
+        - ~/.buildozer
+        - ./.buildozer
+    scripts:
+      - name: Install dependencies
+        script: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            build-essential \
+            git \
+            python3-dev \
+            python3-pip \
+            python3-setuptools \
+            libffi-dev \
+            libssl-dev \
+            libncurses5-dev \
+            libncursesw5-dev \
+            libreadline-dev \
+            libsqlite3-dev \
+            libgdbm-dev \
+            libdb5.3-dev \
+            libbz2-dev \
+            libexpat1-dev \
+            liblzma-dev \
+            tk-dev \
+            libffi-dev \
+            zlib1g-dev \
+            zip \
+            unzip \
+            autoconf \
+            libtool \
+            pkg-config \
+            cmake \
+            ant \
+            openjdk-17-jdk
+      - name: Install Buildozer and Cython
+        script: |
+          pip3 install --upgrade pip
+          pip3 install buildozer cython==0.29.33
+      - name: Build Android APK
+        script: |
+          # Buildozer requires to be run in a non-root environment or with special flags
+          # On Codemagic, it's usually fine, but we might need to accept licenses
+          yes | buildozer android debug
+
+    artifacts:
+      - bin/*.apk
+      - bin/*.aab
