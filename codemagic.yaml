@@ -7,21 +7,26 @@ workflows:
       vars:
         PYTHON_VERSION: "3.12"
     scripts:
-      - name: Install Python Fixes & Buildozer
+      - name: Fix OpenSSL and Install Tools
         script: |
+          # Homebrew disabled openssl@1.1, so we install @3
+          brew install openssl@3
+          
+          # Set paths so the compiler finds the new OpenSSL
+          export LDFLAGS="-L$(brew --prefix openssl@3)/lib"
+          export CPPFLAGS="-I$(brew --prefix openssl@3)/include"
+          export PKG_CONFIG_PATH="$(brew --prefix openssl@3)/lib/pkgconfig"
+
           pip install --upgrade pip
-          # Fix for 'distutils' error in Python 3.12
-          pip install "setuptools<70.0.0" 
-          # Fix for Buildozer compatibility (must be < 3.0)
-          pip install "Cython==0.29.33"
-          pip install buildozer
+          # Use the 'golden' version of Cython for Kivy 3.12 stability
+          pip install "Cython==0.29.33" "setuptools<70.0.0" buildozer
 
       - name: Build APK
         script: |
-          # Force refresh of python-for-android to support AAB
+          # Wipe old p4a to ensure the AAB-compatible version is pulled
           rm -rf .buildozer/android/platform/python-for-android
           
-          # Accept licenses and start build
+          # Start the build (yes | handles the SDK license prompts)
           yes | buildozer -v android debug
     artifacts:
       - bin/*.apk
